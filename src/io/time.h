@@ -1,0 +1,7 @@
+#ifndef BITFINEX_GATEWAY_TIME_H
+#define BITFINEX_GATEWAY_TIME_H
+
+double
+find_time();
+
+#endif //BITFINEX_GATEWAY_TIME_H
