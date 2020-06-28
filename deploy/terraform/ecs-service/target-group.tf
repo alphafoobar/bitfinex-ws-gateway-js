@@ -30,6 +30,6 @@ resource "aws_lb_listener_rule" "https_listener_rule" {
       ]
     }
   }
-  priority = 1
+  priority = 99
   listener_arn = data.terraform_remote_state.ops.outputs.public_lb_listener.arn
 }
