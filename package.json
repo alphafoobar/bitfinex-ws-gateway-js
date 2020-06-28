@@ -1,0 +1,19 @@
+{
+  "name": "bitfinex-js-gateway",
+  "version": "1.0.0",
+  "description": "Simple bitfinex websocket server",
+  "main": "src/index.js",
+  "directories": {
+    "test": "test"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "ws": "7.3.0",
+    "crc-32": "1.2.0",
+    "lodash": "4.17.15"
+  }
+}
