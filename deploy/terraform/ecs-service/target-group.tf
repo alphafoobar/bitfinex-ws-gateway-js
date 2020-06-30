@@ -4,7 +4,7 @@ resource "aws_lb_target_group" "target_group" {
     healthy_threshold = 3
     interval = 30
     matcher = "200-299"
-    path = "/ping.html"
+    path = "/bitfinex-js-gateway/ping"
     protocol = "HTTP"
     timeout = 5
     unhealthy_threshold = 2
@@ -26,10 +26,10 @@ resource "aws_lb_listener_rule" "https_listener_rule" {
   condition {
     path_pattern {
       values = [
-        "/*",
+        "/${local.service_name}/*",
       ]
     }
   }
-  priority = 99
+  priority = 98
   listener_arn = data.terraform_remote_state.ops.outputs.public_lb_listener.arn
 }

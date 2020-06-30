@@ -7,7 +7,7 @@ terraform {
     profile  = "kaizen-terraform"
 
     bucket = "ops.kaizen7.nz"
-    key = "example/bitfinex-c-gateway/ecs"
+    key = "example/bitfinex-js-gateway/ecs"
     encrypt = true
   }
 }

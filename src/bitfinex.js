@@ -7,18 +7,20 @@ const BOOK = {};
 // connect to websocket
 const ws = new WS('wss://api.bitfinex.com/ws/2');
 
+let count = 0;
+
 // handle connect
-ws.on('open', function open () {
+ws.on('open', function open() {
     BOOK.bids = {};
     BOOK.asks = {};
     BOOK.psnap = {};
     BOOK.mcnt = 0;
 
     // send websocket conf event with checksum flag
-    ws.send(JSON.stringify({ event: 'conf', flags: 131072 }));
+    ws.send(JSON.stringify({event: 'conf', flags: 131072}));
 
     // send subscribe to get desired book updates
-    ws.send(JSON.stringify({ event: 'subscribe', channel: 'book', pair: 'tBTCUSD', prec: 'P0' }));
+    ws.send(JSON.stringify({event: 'subscribe', channel: 'book', pair: 'tBTCUSD', prec: 'P0'}));
 });
 
 // handle incoming messages
@@ -54,8 +56,6 @@ ws.on('message', function (msg) {
         if (csCalc !== checksum) {
             console.error('CHECKSUM FAILED');
             process.exit(-1)
-        } else {
-            console.log('Checksum: ' + checksum + ' success!')
         }
         return
     }
@@ -63,14 +63,14 @@ ws.on('message', function (msg) {
     // handle book. create book or update/delete price points
     if (BOOK.mcnt === 0) {
         _.each(msg[1], function (pp) {
-            pp = { price: pp[0], cnt: pp[1], amount: pp[2] };
+            pp = {price: pp[0], cnt: pp[1], amount: pp[2]};
             const side = pp.amount >= 0 ? 'bids' : 'asks';
             pp.amount = Math.abs(pp.amount);
             BOOK[side][pp.price] = pp
         })
     } else {
         msg = msg[1];
-        const pp = { price: msg[0], cnt: msg[1], amount: msg[2] };
+        const pp = {price: msg[0], cnt: msg[1], amount: msg[2]};
 
         // if count is zero, then delete price point
         if (!pp.cnt) {
@@ -97,7 +97,19 @@ ws.on('message', function (msg) {
             // else update price point
             const side = pp.amount >= 0 ? 'bids' : 'asks';
             pp.amount = Math.abs(pp.amount);
-            BOOK[side][pp.price] = pp
+            BOOK[side][pp.price] = pp;
+
+            if (ws.serviceListener && BOOK.psnap['bids'] && BOOK.psnap['asks']) {
+                ws.serviceListener(JSON.stringify({
+                    e: "exchange",
+                    s: "btc/usd",
+                    b: BOOK.psnap['bids'][0],
+                    m: pp.price,
+                    a: BOOK.psnap['asks'][0],
+                    t: Date.now(),
+                    i: count++
+                }));
+            }
         }
 
         // save price snapshots. Checksum relies on psnaps!

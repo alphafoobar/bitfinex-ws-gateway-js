@@ -2,36 +2,36 @@ module "container_definition" {
   source = "git::https://github.com/bnc-projects/terraform-ecs-container-definition.git?ref=1.0.0"
   environment = [
     {
-      name = "environment",
+      name = "environment"
       value = terraform.workspace
     }
   ]
   healthCheck = {
     "command" = [
       "CMD-SHELL",
-      "curl --silent --fail --max-time 30 http://localhost:7681/ping.html || exit 1"
-    ],
-    "interval" = 30,
-    "retries" = 3,
-    "startPeriod" = 5,
-    "timeout": 5
+      "CMD node src/healthcheck.js || exit 1"
+    ]
+    "interval" = 30
+    "retries" = 3
+    "startPeriod" = 5
+    "timeout" = 5
   }
-    logConfiguration  = {
-      "logDriver": "awslogs",
-      "options": {
-        "awslogs-region"        = var.aws_region
-        "awslogs-group"         = "/ecs/service/${local.service_name}"
-      }
+  logConfiguration = {
+    "logDriver" = "awslogs"
+    "options" = {
+      "awslogs-region" = var.aws_region
+      "awslogs-group" = "/ecs/service/${local.service_name}"
     }
-  image = format("%s:%s", data.terraform_remote_state.ecr.outputs.repository_url, var.service_version)
+  }
+  image = "${data.terraform_remote_state.ecr.outputs.repository_url}:${var.service_version}"
   name = local.service_name
   cpu = var.cpu
   memory = var.memory
   memoryReservation = var.memory_reservation
   portMappings = [
     {
-      containerPort = 7681
-      hostPort = 0,
+      containerPort = local.port
+      hostPort = 0
       protocol = "tcp"
     }
   ]
@@ -60,14 +60,14 @@ resource "aws_ecs_service" "ec2_service" {
   propagate_tags = "TASK_DEFINITION"
 
   ordered_placement_strategy {
-    type  = "binpack"
+    type = "binpack"
     field = "cpu"
   }
 
   load_balancer {
     target_group_arn = aws_lb_target_group.target_group.arn
     container_name = local.service_name
-    container_port = 7681
+    container_port = local.port
   }
 
   lifecycle {
@@ -79,4 +79,3 @@ resource "aws_ecs_service" "ec2_service" {
 
   tags = local.tags
 }
-
